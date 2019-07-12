@@ -3,7 +3,7 @@ device: "cpu"
 unprocessed_data: './audio_tracks/*.wav'
 ---
 data:
-    train_path: './fake_data/'
+    train_path: '../train_bird_spectrograms/'
     train_path_unprocessed: './audio_tracks/*.wav'
     test_path: './test'
     test_path_unprocessed: '*.wav'
@@ -23,14 +23,14 @@ model:
     model_path: './speech_id_checkpoint/ckpt_epoch_50_batch_id_1988.pth'
 ---
 train:
-    N : 4 #Number of speakers in batch
-    M : 5 #Number of utterances per speaker
+    N : 5 #Number of speakers in batch
+    M : 10 #Number of utterances per speaker
     num_workers: 0 #number of workers for dataloader
     lr: 0.0001 
     epochs: 950 #Max training speaker epoch 
     log_interval: 1 #Epochs before printing progress
     log_file: './speech_id_checkpoint/Stats'
-    checkpoint_interval: 50 #Save model after x speaker epochs
+    checkpoint_interval: 1 #Save model after x speaker epochs
     checkpoint_dir: './speech_id_checkpoint/'
     restore: !!bool "true" #Resume training from previous model path
 ---

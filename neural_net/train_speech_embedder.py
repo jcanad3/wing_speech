@@ -6,8 +6,36 @@ from data_load import BirdSongData
 from speech_embedder_net import SpeechEmbedder
 from batch_all_triplet_loss import batch_all_triplet_loss
 import numpy as np
-import os, random, time, torch, gc
+import os, random, time, torch, gc, glob
 
+def get_batch(spec_paths):
+	spec_arrs = np.asarray(())
+	labels = np.array([])
+
+	label = 0
+	for spec_path in spec_paths:
+		spec = np.load(spec_path)
+
+		max_samps_per_spk = 20
+		num_samps = max_samps_per_spk
+		idxs = np.random.randint(0, spec.shape[0], max_samps_per_spk)
+		
+		spec = spec[idxs, :]
+
+		if spec_arrs.size == 0:
+			spec_arrs = spec
+		else:
+			spec_arrs = np.vstack((spec_arrs, spec))
+
+		spec_labels = np.repeat(label, num_samps)
+		labels = np.append(labels, spec_labels)
+
+		label += 1
+
+	spec_arrs = np.array(spec_arrs)
+	labels = labels.astype(int)
+	
+	return spec_arrs, labels
 
 def train(model_path):
 	device = torch.device(hp.device)
@@ -35,36 +63,42 @@ def train(model_path):
 	embedder_net.train()
 	iteration = 0
 	
+	bird_spec_paths = glob.glob('../train_bird_spectrograms/*')
+
 	# train for number of epochs
 	for e in range(hp.train.epochs):
-		for batch_id, mel_db_batch in enumerate(train_loader): 
+		random.shuffle(bird_spec_paths)
+		batch_id = 0
+		for spec_idx in range(0, len(bird_spec_paths), 10):
+			specs_arr, labels = get_batch(bird_spec_paths[spec_idx:spec_idx+10])
+			mel_db_batch = torch.from_numpy(specs_arr)
+			labels = torch.from_numpy(labels)
+			
 			# move mel batch to device (cpu or gpu)	
 			mel_db_batch = mel_db_batch.to(device)
-		
+
 			# num frames
 			#num_frames = np.random.randint(24, 160, size=1)
 			#num_frames = num_frames[0]
 			#print('Num frames for batch', num_frames)
 			num_frames = 20
+			
 			# offset
 			offset = np.random.randint(0, 160 - num_frames, size=1)
 			offset = offset[0]
 			print('Offset', offset)	
 
 			# convert mel_db_batch into 3-D array (batch, timestepts, logmels)
-			mel_db_batch = torch.reshape(mel_db_batch, (hp.train.N*hp.train.M, mel_db_batch.size(2), mel_db_batch.size(3)))
+			#mel_db_batch = torch.reshape(mel_db_batch, (hp.train.N*hp.train.M, mel_db_batch.size(2), mel_db_batch.size(3)))
 			mel_db_batch = mel_db_batch[:, offset:offset+num_frames, :]
-			print('MEL DB SHAPE', mel_db_batch.shape)
+			print('MEL DB SHAPE:', mel_db_batch.shape)
+			print('Lables Shape:', labels.shape)		
 
 			#gradient accumulates
 			optimizer.zero_grad()
 			
 			# fit embedding net to current mel batch
 			embeddings = embedder_net(mel_db_batch)
-
-			labels = [[i]*hp.train.M for i in range(hp.train.N)]
-			labels = np.array(labels).flatten()
-			labels = torch.from_numpy(labels)
 	
 			# triplet loss and fraction of positive	
 			loss, fraction_of_positive = batch_all_triplet_loss(embeddings, labels) 
@@ -80,13 +114,14 @@ def train(model_path):
 			# print the training info after log_interval iterations
 			if (batch_id + 1) % hp.train.log_interval == 0:
 				mesg = "{0}\tEpoch:{1}[{2}/{3}],Iteration:{4}\tBatch-Loss:{5:.4f}\tFraction-Positive:{6:.4f}\t\n".format(time.ctime(), e+1,
-						batch_id+1, len(train_dataset)//hp.train.N, iteration,loss, fraction_of_positive)
+						batch_id + 1, round(len(bird_spec_paths)/10) , iteration,loss, fraction_of_positive)
 				print(mesg)
 				if hp.train.log_file is not None:
 					with open(hp.train.log_file,'a') as f:
 						f.write(mesg)
 
-	
+			batch_id += 1
+
 		# save the model parameters at the checkpoint
 		if hp.train.checkpoint_dir is not None and (e + 1) % hp.train.checkpoint_interval == 0:
 			embedder_net.eval().cpu()

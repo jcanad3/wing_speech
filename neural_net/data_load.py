@@ -54,8 +54,11 @@ class BirdSongData(Dataset):
 			selected_file = np_file_list[idx]			   
 		
 		if self.shuffle:
-			utter_index = np.random.randint(0, utters.shape[0], self.utter_num)   # select M utterances per speaker
-			utterance = utters[utter_index]	   
+			if utters.shape[0] > self.utter_num:
+				utter_index = np.random.randint(0, utters.shape[0], self.utter_num)   # select M utterances per speaker
+				utterance = utters[utter_index]
+			else:
+				utterance = utters
 		else:
 			utterance = utters[self.utter_start: self.utter_start+self.utter_num] # utterances of a speaker [batch(M), n_mels, frames]
 

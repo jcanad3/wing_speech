@@ -81,9 +81,8 @@ def _get_triplet_mask(labels):
 	# Check that i, j and k are distinct
 	data = torch.eye(labels.shape[0])
 	# changing data type for logical operations
-	indices_equal = torch.ones((data.shape[0], data.shape[1]), dtype=torch.uint8)
-	indices_equal = indices_equal.new_tensor(data)
-	
+	indices_equal = data.type(torch.ByteTensor)
+
 	indices_not_equal = ~indices_equal
 	
 	i_not_equal_j = torch.unsqueeze(indices_not_equal, 2)
@@ -102,8 +101,7 @@ def _get_triplet_mask(labels):
 
 	# Combine the two masks
 	byte_mask = distinct_indices & valid_labels
-	mask = torch.ones((byte_mask.shape[0], byte_mask.shape[1]), dtype=torch.float)
-	mask = mask.new_tensor(byte_mask)
+	mask = byte_mask.type(torch.FloatTensor)
 
 	return mask
 
