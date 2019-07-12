@@ -8,22 +8,11 @@ import numpy as np
 from hparam import hparam as hp
 from vad import vad
 
-# downloaded dataset path
-audio_path = glob.glob(os.path.dirname(hp.unprocessed_data))										
-
-def save_spectrogram_tisv():
-	""" Full preprocess of text independent utterance. The log-mel-spectrogram is saved as numpy file.
-		Each partial utterance is splitted by voice detection using DB
-		and the first and the last 180 frames from each partial utterance are saved. 
-		Need : utterance data set (VTCK)
-	"""
-	print("start text independent utterance feature extraction")
-	os.makedirs(hp.data.train_path, exist_ok=True)   # make folder to save train file
-	os.makedirs(hp.data.test_path, exist_ok=True)	# make folder to save test file
-	
-	for bird_type in glob.glob('../bird_species/*')
+def gen_spectrogram():
+	for bird_type in glob.glob('../birds_mp3_wavs/*')
 		bird_name = os.path.basename(bird_type)
 		print('Bird:', bird_name)
+		spec_samples = []
 		for recording in glob.glob(bird_type + '/*'):
 			print('\t - ', recording)
 			try:
@@ -38,19 +27,21 @@ def save_spectrogram_tisv():
 				S = np.log10(np.dot(mel_basis, S) + 1e-6)		   # log mel spectrogram of utterances
 				S = S.T		
 		
-				spec_samples = []
-				for idx in range(0, S.shape[1], 160):
+				for idx in range(0, S.shape[0], 160):
 					samp = S[idx:idx+160, :]
 					if samp.shape == (160, 40):
 						spec_samples.append(samp)
-				spec_samples = np.array(spec_samples)	
-				print('Log Melspectrogram', spec_samples.shape)
-				np.save('fma_md_specs/' + np_name, spec_samples)
-		
+			
 			except:
 				print('Error creating spectrogram')
-
-		os.remove(voice_only_path)
+			
+			#  remove voice only file		
+			os.remove(voice_only_path)
+		
+		spec_samples = np.array(spec_samples)	
+		print('Log Melspectrogram', spec_samples.shape)
+		np.save('full_bird_specs/' + bird_name, spec_samples)
+		
 
 if __name__ == "__main__":
-	save_spectrogram_tisv()
+	gen_spectrogram()
