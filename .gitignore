@@ -1,0 +1,7 @@
+# ignore audio
+*.wav
+*.mp3
+
+# ignore data sheets
+*.csv
+*.txt
