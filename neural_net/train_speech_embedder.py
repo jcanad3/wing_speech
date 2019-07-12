@@ -6,7 +6,7 @@ from data_load import BirdSongData
 from speech_embedder_net import SpeechEmbedder
 from batch_all_triplet_loss import batch_all_triplet_loss
 import numpy as np
-import os, random, time, torch, gc, glob
+import os, random, time, torch, gc, glob, math
 
 def get_batch(spec_paths):
 	spec_arrs = np.asarray(())
@@ -117,7 +117,7 @@ def train(model_path):
 			# print the training info after log_interval iterations
 			if (batch_id + 1) % hp.train.log_interval == 0:
 				mesg = "{0}\tEpoch:{1}[{2}/{3}],Iteration:{4}\tBatch-Loss:{5:.4f}\tFraction-Positive:{6:.4f}\t\n".format(time.ctime(), e+1,
-						batch_id + 1, round(len(bird_spec_paths)/10) , iteration,loss, fraction_of_positive)
+						batch_id + 1, math.ceil(len(bird_spec_paths)/10) , iteration,loss, fraction_of_positive)
 				print(mesg)
 				if hp.train.log_file is not None:
 					with open(hp.train.log_file,'a') as f:

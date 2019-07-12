@@ -8,3 +8,6 @@
 
 # drop np files
 *.npy
+
+# tmp drop checkpoint files
+*.pth
