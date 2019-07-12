@@ -16,11 +16,14 @@ def get_batch(spec_paths):
 	for spec_path in spec_paths:
 		spec = np.load(spec_path)
 
-		max_samps_per_spk = 20
-		num_samps = max_samps_per_spk
-		idxs = np.random.randint(0, spec.shape[0], max_samps_per_spk)
-		
-		spec = spec[idxs, :]
+		# get a max of twenty samples from each spectrogram
+		if spec.shape[0] > 20:
+			max_samps_per_spk = 20
+			num_samps = max_samps_per_spk
+			idxs = np.random.randint(0, spec.shape[0], max_samps_per_spk)
+			spec = spec[idxs, :]
+		else:
+			num_samps = spec.shape[0]	
 
 		if spec_arrs.size == 0:
 			spec_arrs = spec
