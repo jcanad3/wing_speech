@@ -53,7 +53,7 @@ def train(model_path):
 
 	# restore from previous training section
 	#if hp.train.restore:
-	#	embedder_net.load_state_dict(torch.load(model_path))
+	embedder_net.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_67_batch_id_243.pth'))
 	
 	#Both net and loss have trainable parameters
 	optimizer = torch.optim.Adam([
@@ -87,13 +87,14 @@ def train(model_path):
 			num_frames = 20
 			
 			# offset
-			offset = np.random.randint(0, 160 - num_frames, size=1)
-			offset = offset[0]
-			print('Offset', offset)	
+			#offset = np.random.randint(0, 160 - num_frames, size=1)
+			#offset = offset[0]
+			#print('Offset', offset)	
 
 			# convert mel_db_batch into 3-D array (batch, timestepts, logmels)
 			#mel_db_batch = torch.reshape(mel_db_batch, (hp.train.N*hp.train.M, mel_db_batch.size(2), mel_db_batch.size(3)))
-			mel_db_batch = mel_db_batch[:, offset:offset+num_frames, :]
+			#mel_db_batch = mel_db_batch[:, offset:offset+num_frames, :]
+			mel_db_batch = mel_db_batch[:, :, :]
 			print('MEL DB SHAPE:', mel_db_batch.shape)
 			print('Lables Shape:', labels.shape)		
 
