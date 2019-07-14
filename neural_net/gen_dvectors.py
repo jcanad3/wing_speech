@@ -55,6 +55,6 @@ def gen_spectrogram(d_vector_model):
 
 if __name__ == "__main__":
 	d_vector_model = SpeechEmbedder()
-	d_vector_model.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_37_batch_id_243.pth'))
+	d_vector_model.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_105_batch_id_243.pth'))
 	d_vector_model.eval()
 	gen_spectrogram(d_vector_model)

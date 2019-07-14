@@ -6,11 +6,11 @@ from vad import vad
 import numpy as np
 import glob, os, librosa
 
-def gen_spectrogram():
+def gen_spectrogram(train_test_split=False):
 	for bird_type in glob.glob('../birds_mp3_wavs/*'):
 		bird_name = os.path.basename(bird_type)
 		print('Bird:', bird_name)
-		if len(os.listdir(bird_type)) > 0:
+		if (len(os.listdir(bird_type)) > 0) and (bird_name + '.npy' not in os.listdir('../train_bird_spectrograms')):
 			spec_samples = []
 			for recording in glob.glob(bird_type + '/*'):
 				print('\t - ', recording)
@@ -26,9 +26,9 @@ def gen_spectrogram():
 					S = np.log10(np.dot(mel_basis, S) + 1e-6)		   # log mel spectrogram of utterances
 					S = S.T		
 			
-					for idx in range(0, S.shape[0], 160):
-						samp = S[idx:idx+160, :]
-						if samp.shape == (160, 40):
+					for idx in range(0, S.shape[0], 20):
+						samp = S[idx:idx+20, :]
+						if samp.shape == (20, 40):
 							spec_samples.append(samp)
 				except:
 					print('Error creating spectrogram')
@@ -37,7 +37,8 @@ def gen_spectrogram():
 				os.remove(voice_only_path)
 			
 			spec_samples = np.array(spec_samples)
-			if spec_samples.shape[0] > 2:
+
+			if spec_samples.shape[0] > 2 and train_test_split == True:
 				train_spec_samples = spec_samples[:int(0.8*spec_samples.shape[0]), :, :]
 				test_spec_samples = spec_samples[int(0.8*spec_samples.shape[0]):, :, :]
 
@@ -48,6 +49,9 @@ def gen_spectrogram():
 					np.save('../train_bird_spectrograms/' + bird_name + '.npy', train_spec_samples)
 				if test_spec_samples.shape[0] > 0:
 					np.save('../test_bird_spectrograms/' + bird_name + '.npy', test_spec_samples)
+
+			else:
+				np.save('../train_bird_spectrograms/' + bird_name + '.npy', spec_samples)
 
 			print('')	
 

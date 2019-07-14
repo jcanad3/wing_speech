@@ -53,7 +53,7 @@ def train(model_path):
 
 	# restore from previous training section
 	#if hp.train.restore:
-	embedder_net.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_37_batch_id_243.pth'))
+	embedder_net.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_61_batch_id_243.pth'))
 	
 	#Both net and loss have trainable parameters
 	optimizer = torch.optim.Adam([
@@ -69,7 +69,7 @@ def train(model_path):
 	bird_spec_paths = glob.glob('../train_bird_spectrograms/*')
 
 	# train for number of epochs
-	for e in range(hp.train.epochs):
+	for e in range(62, hp.train.epochs):
 		random.shuffle(bird_spec_paths)
 		batch_id = 0
 		for spec_idx in range(0, len(bird_spec_paths), 10):

@@ -1,7 +1,7 @@
 import numpy as np
 import glob
 
-for spec_path in glob.glob('../train_bird_spectrograms/*'):
+for spec_path in glob.glob('../test_bird_spectrograms/*'):
 	spec = np.load(spec_path)
 
 	print('Old Spec', spec.shape)
