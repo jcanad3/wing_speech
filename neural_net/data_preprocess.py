@@ -7,7 +7,7 @@ import numpy as np
 import glob, os, librosa
 
 def gen_spectrogram(train_test_split=False):
-	for bird_type in glob.glob('../birds_mp3_wavs/*'):
+	for bird_type in glob.glob('../birds_wavs/*'):
 		bird_name = os.path.basename(bird_type)
 		print('Bird:', bird_name)
 		if (len(os.listdir(bird_type)) > 0) and (bird_name + '.npy' not in os.listdir('../train_bird_spectrograms')):
