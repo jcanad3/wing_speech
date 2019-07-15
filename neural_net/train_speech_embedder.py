@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from hparam import hparam as hp
 from data_load import BirdSongData
 from speech_embedder_net import SpeechEmbedder
-from batch_all_triplet_loss import batch_all_triplet_loss
+from batch_all_triplet_loss import batch_all_triplet_loss, batch_all_gaussian_triplet_loss
 import numpy as np
 import os, random, time, torch, gc, glob, math
 
@@ -40,6 +40,52 @@ def get_batch(spec_paths):
 	
 	return spec_arrs, labels
 
+# GAT = Gaussian Triplet
+def get_gaussian_triplet_batch(df_rec_and_species, spec_paths):
+	# spectrograms are individual recordings in this case
+	# needs a spectrogram, a spectrogram_id (recording_label), and a species id (species_label)
+	
+	spec_arrs = np.asarray(())
+	recording_labels = np.array([])
+	species_labels = np.array([])
+
+	recording_label = 0
+	species_label = 0
+	for path in spec_paths:
+		spec = np.load(spec_path)
+		rec_id = os.path.basename(path).replace('.npy', '')
+		rec_id = int(rec_id)
+
+		# find species label using df
+		species_id = df_rec_and_species.loc[df_rec_and_species['recording_id'] == rec_id, 'species_id'].values[0]
+		species_id = int(species_id)
+		species_labels = np.append(species_labels, species_id)
+
+		# get a max of twenty samples from each spectrogram
+		if spec.shape[0] > 20:
+			max_samps_per_spk = 20
+			num_samps = max_samps_per_spk
+			idxs = np.random.randint(0, spec.shape[0], max_samps_per_spk)
+			spec = spec[idxs, :]
+		else:
+			num_samps = spec.shape[0]	
+
+		if spec_arrs.size == 0:
+			spec_arrs = spec
+		else:
+			spec_arrs = np.vstack((spec_arrs, spec))
+
+		spec_labels = np.repeat(recording_label, num_samps)
+		recording_labels = np.append(recording_labels, spec_labels)
+
+		recording_label += 1
+
+	print('Spec Arrs shape', spec_arrs.shape)
+	print('Recording labels', recording_labels.shape)
+	print('Species Labels', species_labels.shape)
+
+	return spec_arrs, recording_labels, species_labels
+
 def train(model_path):
 	device = torch.device(hp.device)
 
@@ -53,7 +99,7 @@ def train(model_path):
 
 	# restore from previous training section
 	#if hp.train.restore:
-	embedder_net.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_61_batch_id_243.pth'))
+	embedder_net.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_105_batch_id_243.pth'))
 	
 	#Both net and loss have trainable parameters
 	optimizer = torch.optim.Adam([

@@ -7,14 +7,14 @@ import numpy as np
 from speech_embedder_net import SpeechEmbedder
 import glob, os, librosa, torch
 
-def gen_spectrogram(d_vector_model):
-	for bird_type in glob.glob('../birds_mp3_wavs/*'):
+def gen_spectrogram(d_vector_model, audio_dir, avg_emb_dir):
+	for bird_type in glob.glob('../' + audio_dir + '/*'):
 		bird_name = os.path.basename(bird_type)
 		print('Bird:', bird_name)
 		if len(os.listdir(bird_type)) > 0:
 			for recording in glob.glob(bird_type + '/*'):
 				rec_name = os.path.basename(recording)
-				if rec_name.replace('wav', 'npy') not in os.listdir('../avg_bird_embeddings'):
+				if rec_name.replace('wav', 'npy') not in os.listdir('../' + avg_emb_dir):
 					print('\t - ', recording)
 					try:
 						# do vad stuff
@@ -47,7 +47,7 @@ def gen_spectrogram(d_vector_model):
 						spec_samps = torch.from_numpy(spec_samples)
 						embs = d_vector_model(spec_samps).detach().numpy()
 						avg_embs = np.mean(embs, axis=0)
-						np.save('../avg_bird_embeddings/' + rec_name.replace('wav', 'npy'), avg_embs)
+						np.save('../' + avg_emb_dir + '/' + rec_name.replace('wav', 'npy'), avg_embs)
 				else:
 					print('File already exists')
 
@@ -57,4 +57,7 @@ if __name__ == "__main__":
 	d_vector_model = SpeechEmbedder()
 	d_vector_model.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_105_batch_id_243.pth'))
 	d_vector_model.eval()
-	gen_spectrogram(d_vector_model)
+	audio_dir = 'test_birds_wavs'
+	avg_emb_dir = 'avg_test_bird_embs'
+
+	gen_spectrogram(d_vector_model, audio_dir, avg_emb_dir)
