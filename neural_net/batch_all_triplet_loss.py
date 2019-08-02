@@ -184,9 +184,56 @@ def gaussian_embeddings(embeddings, recording_labels, species_labels):
 
 	return gaussian_embeddings, gaussian_labels
 
+def mean_embeddings(embeddings, recording_labels, species_labels):
+	embeddings = embeddings.detach().numpy()
+	recording_labels = recording_labels.detach().numpy()
+	species_labels = species_labels.detach().numpy()
+
+	uniq_rec_labels = np.unique(recording_labels).tolist()
+
+	mean_embeddings = np.asarray(())
+	mean_labels = np.array([])
+
+	# get all the embeddings for individual recording
+	for label in uniq_rec_labels:
+		rec_idxs = np.argwhere(label == recording_labels)
+		species_id = np.unique(species_labels[rec_idxs])[0]
+		species_id = int(species_id)
+		
+		rec_embs = embeddings[rec_idxs, :]
+		rec_embs = rec_embs.reshape(rec_embs.shape[0]*rec_embs.shape[1], rec_embs.shape[2])
+
+		# find mean of embeddings
+		mean_emb = np.mean(rec_embs, axis=0)
+
+		# samples gm 10 times
+		for noise in range(10):
+			# add small amount of gaussian noise
+			mean_w_noise = mean_emb + np.random.normal(0, 0.1, 1)
+			if mean_embeddings.size == 0:
+				mean_embeddings = mean_w_noise
+			else:
+				mean_embeddings = np.vstack((mean_embeddings, mean_w_noise))
+
+		# append correct species_labels to each of the 10 embeddings
+		label_repeats = np.repeat(species_id, 10)
+		mean_labels = np.append(mean_labels, label_repeats)
+
+	mean_labels = mean_labels.astype(int)
+
+	# convert them back to tensors
+	mean_embeddings = torch.tensor(mean_embeddings, requires_grad=True)
+	mean_labels = torch.from_numpy(mean_labels)
+
+	# update data types
+	mean_embeddings = mean_embeddings.type(torch.FloatTensor)
+
+	return mean_embeddings, mean_labels
+
 def batch_all_gaussian_triplet_loss(embeddings, recording_labels, species_labels, squared=True):
 	# fit gaussian mixture to embeddings with same recording_labels
-	embeddings, labels = gaussian_embeddings(embeddings, recording_labels, species_labels)
+	#embeddings, labels = gaussian_embeddings(embeddings, recording_labels, species_labels)
+	embeddings, labels = mean_embeddings(embeddings, recording_labels, species_labels)
 
 	margin = 1.0	
 	pairwise_dist = _pairwise_distances(embeddings, squared=squared)
@@ -217,7 +264,5 @@ def batch_all_gaussian_triplet_loss(embeddings, recording_labels, species_labels
 
 	# Get final mean triplet loss over the positive valid triplets
 	triplet_loss = torch.sum(triplet_loss) / (num_positive_triplets + 1e-16)
-	print('Triplet Loss', triplet_loss)
-	print('Fraction_positive_triplets', fraction_positive_triplets)
 
 	return triplet_loss, fraction_positive_triplets

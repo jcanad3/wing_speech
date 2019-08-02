@@ -74,7 +74,7 @@ def train(model_path):
 
 	# restore from previous training section
 	#if hp.train.restore:
-	embedder_net.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_105_batch_id_243.pth'))
+	#embedder_net.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_105_batch_id_243.pth'))
 	
 	#Both net and loss have trainable parameters
 	optimizer = torch.optim.Adam([

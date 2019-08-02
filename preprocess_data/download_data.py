@@ -4,11 +4,11 @@ import pandas as pd
 import requests, os
 
 def fetch_recording(rec_id, url, species_id):
-	os.makedirs('../train_2_birds_mp3/' + str(species_id), exist_ok=True)
+	os.makedirs('../new_test_files_mp3/' + str(species_id), exist_ok=True)
 	if str(rec_id) + '.wav' not in os.listdir('../birds_wavs/' + str(species_id)) \
-		and str(rec_id) + '.mp3' not in os.listdir('../train_2_birds_mp3/' + str(species_id)):
+		and str(rec_id) + '.wav' not in os.listdir('../train_2_birds_wavs/' + str(species_id)):
 		req = requests.get(url)
-		write_path = '../train_2_birds_mp3/' + str(species_id) + '/' + str(rec_id) + '.mp3'
+		write_path = '../new_test_files_mp3/' + str(species_id) + '/' + str(rec_id) + '.mp3'
 		print(write_path)
 		with open(write_path, 'wb') as f:
 			f.write(req.content)

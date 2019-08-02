@@ -10,4 +10,4 @@
 *.npy
 
 # tmp drop checkpoint files
-*.pth
+#*.pth

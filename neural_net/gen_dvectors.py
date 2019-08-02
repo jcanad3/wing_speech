@@ -55,9 +55,9 @@ def gen_spectrogram(d_vector_model, audio_dir, avg_emb_dir):
 
 if __name__ == "__main__":
 	d_vector_model = SpeechEmbedder()
-	d_vector_model.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_105_batch_id_243.pth'))
+	d_vector_model.load_state_dict(torch.load('speech_id_checkpoint/ckpt_epoch_230_batch_id_529.pth'))
 	d_vector_model.eval()
-	audio_dir = 'test_birds_wavs'
+	audio_dir = 'train_2_birds_wavs'
 	avg_emb_dir = 'avg_test_bird_embs'
 
 	gen_spectrogram(d_vector_model, audio_dir, avg_emb_dir)
