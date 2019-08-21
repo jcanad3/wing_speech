@@ -1,6 +1,8 @@
 ## Wing Speech
 PyTorch Triplet Loss based RNN for identifying bird species by audio recordings.
 
+![Subset Species Visualization](https://github.com/jcanad3/wing_speech/blob/master/imgs/subset_species.png)
+
 ## Data
 The bird song recordings for this project come from the Xeno-Canto corpus, which, as of this writing, has 472,000+ recordings and 10000+ species.
 A subset of 35,183 files are used for training the RNN.
