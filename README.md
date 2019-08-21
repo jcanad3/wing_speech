@@ -10,10 +10,11 @@ A subset of 35,183 files are used for training the RNN.
 ## Neural Network
 The code is largely taken from this project https://github.com/HarryVolek/PyTorch_Speaker_Verification . However, the wing_speech implementation uses triplet loss as opposed to GE2E loss.
 
-The architecture and hyperparameters for the RNN come from "Speaker Diarizatio with LSTM" by Wang et al. There are 
+The architecture and hyperparameters for the RNN come from "Speaker Diarization with LSTM" by Wang et al. There are 
 three LSTM layers, each with 768 cells. A final linear layer contains 256 nodes, the outputs of which serve as the embedding.
-For each clip, an embedding is calculated from each 200ms chunk. Once all of the embeddings for a single clip have
-been calculated, the mean of this embedding serves as a vector representation of the full clip.
+For each clip, an embedding is calculated from each 200ms chunk. Once the window embeddings for a single clip have
+been calculated, the mean is taken across the numpy array. This serves as a finite vector representation
+for an input audio clip of indeterminate length.
 
 ## Prediction Methodologies
 When predicting the species for a new recording, the feature extraction process is identical to the one mentioned above, i.e.
